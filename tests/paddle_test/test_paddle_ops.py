@@ -92,7 +92,7 @@ class TestPaddleOps:
         with flag_gems.use_gems():
             e = paddle.addmm(a, b, c)
 
-        np.testing.assert_allclose(d.numpy(), e.numpy(), rtol=1e-2, atol=1e-2)
+        np.testing.assert_allclose(d.numpy(), e.numpy(), rtol=1e-5, atol=1e-5)
 
     @pytest.mark.parametrize("shape", [[4, 3], [2, 3, 4]])
     def test_all(self, shape):
@@ -216,12 +216,22 @@ class TestPaddleOps:
 
         indices = paddle.randint(0, vocab_size, [batch_size, seq_len]).astype("int32")
         weight = paddle.randn([vocab_size, embedding_dim])
+        weight.stop_gradient = False
 
         c = paddle.nn.functional.embedding(indices, weight)
+        c.backward()
+        grad0 = weight.grad.numpy().copy()
+
+        weight.clear_gradient()
 
         with flag_gems.use_gems():
             d = paddle.nn.functional.embedding(indices, weight)
+            d.backward()
+            grad1 = weight.grad.numpy().copy()
+
+            weight.clear_gradient()
         np.testing.assert_allclose(c.numpy(), d.numpy(), rtol=1e-5, atol=1e-6)
+        np.testing.assert_allclose(grad0, grad1, rtol=1e-5, atol=1e-6)
 
     def test_index_add(self):
         input_tensor = paddle.ones([3, 3], dtype="float32")
