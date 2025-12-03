@@ -282,7 +282,7 @@ def softmax_backward_kernel_inner(
             offsets += TILE_N
 
 
-def softmax(self, dim, out, half_to_float=False):
+def softmax(self, dim, half_to_float=False):
     logger.debug("GEMS SOFTMAX")
 
     assert dim >= -self.ndim and dim < self.ndim, "Invalid dim"

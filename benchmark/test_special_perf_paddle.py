@@ -1,9 +1,9 @@
 import random
 
 import pytest
+import flag_gems
 import torch
 
-import flag_gems
 from benchmark.attri_util import BOOL_DTYPES, FLOAT_DTYPES, INT_DTYPES, BenchLevel
 from benchmark.performance_utils import (
     Config,
@@ -37,35 +37,7 @@ def resolve_conj_input_fn(shape, dtype, device):
     yield x.conj(),
 
 
-special_operations = [
-    # Sorting Operations
-    ("topk", torch.topk, FLOAT_DTYPES, topk_input_fn),
-    # Complex Operations
-    ("resolve_neg", torch.resolve_neg, [torch.cfloat], resolve_neg_input_fn),
-    ("resolve_conj", torch.resolve_conj, [torch.cfloat], resolve_conj_input_fn),
-]
 
-
-@pytest.mark.parametrize(
-    "op_name, torch_op, dtypes, input_fn",
-    [
-        pytest.param(
-            op,
-            fn,
-            dtypes,
-            input_fn,
-            marks=getattr(pytest.mark, op, None),
-        )
-        for op, fn, dtypes, input_fn in special_operations
-    ],
-)
-def test_special_operations_benchmark(op_name, torch_op, dtypes, input_fn):
-    if vendor_name == "mthreads" and op_name in ["resolve_neg", "resolve_conj"]:
-        pytest.skip("Torch not supported complex")
-    bench = GenericBenchmarkExcluse1D(
-        input_fn=input_fn, op_name=op_name, dtypes=dtypes, torch_op=torch_op
-    )
-    bench.run()
 
 
 @pytest.mark.skipif(flag_gems.vendor_name == "hygon", reason="RuntimeError")
@@ -175,7 +147,7 @@ class EmbeddingBenchmark(GenericBenchmark2DOnly):
 
 def embedding_input_fn(shape, dtype, device):
     num_embeddings, embedding_dim = shape
-    indices = torch.randint(0, num_embeddings, (num_embeddings,), device=device)
+    indices = torch.randint(0, num_embeddings, (num_embeddings,))
     weight = torch.randn((num_embeddings, embedding_dim), device=device, dtype=dtype)
     yield {"input": indices, "weight": weight},
     if Config.bench_level == BenchLevel.COMPREHENSIVE:
@@ -183,8 +155,7 @@ def embedding_input_fn(shape, dtype, device):
             0,
             num_embeddings,
             (num_embeddings, num_embeddings),
-            device=device,
-        )
+        ).to(device)
         yield {"input": indices_2d, "weight": weight},
 
 
@@ -194,7 +165,7 @@ def embedding_backward_input_fn(shape, dtype, device):
         input = forward_args[0]["input"]
         weight = forward_args[0]["weight"]
         # print(f'weight = {weight}')
-        weight.requires_grad_(True)
+        weight.stop_gradient = False
         # import pudb; pudb.set_trace()
         # output = torch.nn.functional.embedding(input, weight)
         # grad_output = torch.randn_like(output)
@@ -511,3 +482,11 @@ def test_perf_rwkv_ka_fusion():
     )
     bench.set_gems(gems_op)
     bench.run()
+
+if __name__ == "__main__":
+    import pytest
+    pytest.main([
+        "-s",
+        __file__ + "::test_perf_embedding_backward",
+        __file__ + "::test_perf_embedding"
+    ])
