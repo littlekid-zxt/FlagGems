@@ -72,7 +72,7 @@ def test_perf_index_select(op_name, torch_op, input_fn, gbps_fn, dtypes):
         op_name=op_name,
         torch_op=torch_op,
         dtypes=dtypes,
-        get_gbps=gbps_fn,
+        # get_gbps=gbps_fn,
     )
     bench.run()
 

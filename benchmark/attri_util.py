@@ -3,6 +3,7 @@ from dataclasses import asdict, dataclass, fields
 from enum import Enum
 from typing import List, Optional, Tuple
 
+quick = False
 if quick:
     DEFAULT_WARMUP_COUNT = 2
     DEFAULT_ITER_COUNT = 2
