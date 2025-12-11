@@ -26,8 +26,8 @@ class UnaryReductionBenchmark(Benchmark):
     Base class for benchmarking reduction operations.
     """
 
-    def set_more_metrics(self):
-        return ["gbps"]
+    # def set_more_metrics(self):
+    #     return ["gbps"]
 
     def get_gbps(self, args, latency):
         inp = args[0]
@@ -116,11 +116,3 @@ def test_perf_dot():
     )
 
     bench.run()
-
-
-if __name__ == "__main__":
-    pytest.main([
-        "-x", 
-        __file__ + "::test_general_reduction_perf",
-        __file__ + "::test_general_reduction_backward_perf",
-    ])
