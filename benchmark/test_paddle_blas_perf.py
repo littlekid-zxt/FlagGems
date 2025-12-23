@@ -78,6 +78,12 @@ class BlasBenchmark(Benchmark):
             (8, 1848, 1536, 128256),
             (8, 1848, 1536, 152064),
         ]
+        if flag_gems.framework_name == "paddle":
+            large_k_shapes = [
+                # (8, 1848, 1536, 151936),
+                (8, 1848, 1536, 128256),
+                # (8, 1848, 1536, 152064), # need about 48GB GPU memory
+            ]
 
         model_shaps = model_shapes()
         return large_k_shapes + model_shaps
