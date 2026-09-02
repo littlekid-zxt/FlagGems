@@ -733,6 +733,8 @@ _FULL_CONFIG = (
     ("linalg_lu_factor_ex.out", linalg_lu_factor_ex_out),
     ("linalg_ldl_solve", linalg_ldl_solve),
     ("linalg_lstsq", linalg_lstsq),
+    ("linalg_matrix_exp", linalg_matrix_exp),
+    ("linalg_matrix_exp.out", linalg_matrix_exp_out),
     ("linalg_matrix_norm", linalg_matrix_norm),
     (
         "linalg_matrix_sqrth",
